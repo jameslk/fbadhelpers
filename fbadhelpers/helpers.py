@@ -31,6 +31,26 @@ def create_api(
         namespace=namespace
     )
 
+# https://github.com/facebook/facebook-python-ads-sdk#pre-requisites
+def create_app_api(
+        app_id: str,
+        app_secret: str,
+        access_token: TAccessToken,
+        business_id: TBusinessId,
+        ad_account_id: TAdAccountId,
+        timezone: str,
+        namespace: str
+    ) -> ApiRecord:
+
+    return ApiRecord(
+        service=FacebookAdsApi.init(app_id=app_id, app_secret=app_secret, access_token=access_token),
+        access_token=access_token,
+        business_id=business_id,
+        ad_account_id='act_' + str(ad_account_id),
+        timezone=timezone,
+        namespace=namespace
+    )
+
 def with_ad_account(api: ApiRecord):
     return AdAccount(fbid=api.ad_account_id, api=api.service)
 
@@ -58,9 +78,9 @@ def get_campaign_by_id(api: ApiRecord, campaign_id: TCampaignId, fields: Iterabl
 def get_ad_set_by_id(api: ApiRecord, ad_set_id: TAdSetId, fields: Iterable[str] = None) -> AdSet:
     return AdSet(ad_set_id, api=api.service).api_get(fields=fields)
 
-def get_ad_sets_by_campaign_id(api: ApiRecord, campaign_id: TCampaignId) -> Sequence[AdSet]:
+def get_ad_sets_by_campaign_id(api: ApiRecord, campaign_id: TCampaignId, fields: Iterable[str] = None) -> Sequence[AdSet]:
     ad_sets = Campaign(fbid=campaign_id, api=api.service).get_ad_sets(
-        fields=[
+        fields=fields or [
             AdSet.Field.id,
             AdSet.Field.name,
             AdSet.Field.status,
